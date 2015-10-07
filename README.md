@@ -7,6 +7,7 @@ Chrome extension for creating barebone replicas of imgur albums for archiving
 * v1.0.0 First functioning version
 * v1.1.0 layout fixing to match original appearance on imgur
 * v1.1.1 proper extension icon
+* v1.1.2 updated icon
 
 ## TODO ##
 
