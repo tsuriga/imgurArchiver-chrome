@@ -2,11 +2,11 @@
     "manifest_version": 2,
 
     "name": "imgur Archiver",
-    "description": "This extension enables creating a clean version of an imgur album for saving it onto one's computer",
-    "version": "1.0",
+    "description": "This extension enables creating a clean version of an imgur album without comments for saving",
+    "version": "1.1.1",
 
     "browser_action": {
-        //"default_icon": "archiver.png",
+        "default_icon": "archiver.png",
         "default_title": "Archive album",
         "default_popup": "archiver.html"
     },
