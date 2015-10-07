@@ -23,6 +23,7 @@ requests or create your own version.
   URL. Now the HTML content gets saved twice since Chrome will enter everything
   from the address bar into a comment at the top of the saved HTML page: "Page
   saved from <URL>"
+* Code cleanup. Move styles, scripts and fonts into separate files if possible
 
 ## LICENSES ##
 
