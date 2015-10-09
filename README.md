@@ -8,16 +8,13 @@ Chrome extension for creating barebone replicas of imgur albums for archiving
 * v1.1.0 layout fixing to match original appearance on imgur
 * v1.1.1 proper extension icon
 * v1.1.2 updated icon
-* v1.2.0 image resizing script bundled and ideas update
+* v1.2.0 image resizing script bundled
 * v1.2.1 style fixes and improved image resizing
-
-## TODO ##
-* v1.3.0 wrap into a real chrome extension
 
 ## IDEAS ##
 
 These are some of the ideas I might start working on if there's a need for
-them. If I do, I will put them under TODO header with a planned release
+them. If I do, I will put them under a TODO header with a planned release
 version. If you wish to develop this further, feel free to fork and either push
 pull requests or create your own version.
 
