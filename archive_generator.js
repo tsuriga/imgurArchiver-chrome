@@ -141,6 +141,7 @@ function getStyles() {
         'color: #CCC;' +
         'background: #2E2E2E;' +
         'font-size: 16px;' +
+        'margin-bottom: 0;' +
     '}';
 
     stylesStr += '.post-image {' +
@@ -155,6 +156,12 @@ function getStyles() {
         'overflow: hidden;' +
         'white-space: pre-wrap;' +
         'word-wrap: break-word;' +
+    '}';
+
+    stylesStr += '.post-image-container {' +
+        'margin: 0;' +
+        'padding: 0;' +
+        'box-shadow: 0 4px 4px -2px rgba(0, 0, 0, .2), 0 -4px 4px -2px rgba(0, 0, 0, .2);' +
     '}';
 
     stylesStr += 'a {' +
@@ -256,6 +263,8 @@ function parseAlbum(album) {
     '</div>';
 
     for (var i = 0; i < images.length; i++) {
+        albumHtml += '<div class="post-image-container">';
+
         albumHtml += '<h2 class="post-image-title font-opensans-semibold">' +
             images[i].title +
         '</h2>';
@@ -271,6 +280,8 @@ function parseAlbum(album) {
         albumHtml += '<p class="post-image-description font-opensans-reg">' +
             images[i].description +
         '</p>';
+
+        albumHtml += '</div>';
     }
 
     return albumHtml + '</div>';
