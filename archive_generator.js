@@ -191,14 +191,15 @@ function getScripts() {
                     "trueWidth = img.naturalWidth," +
                     "trueHeight = img.naturalHeight," +
 
-                    "newWidth = trueWidth > screenX ? screenX - 40 : trueWidth," +
+                    "newWidth = trueWidth > screenX ? screenX - 80 : trueWidth," +
                     "newHeight = trueHeight * newWidth / trueWidth," +
 
-                    "imagePositionX = (screenX - newWidth) / 2," +
-                    "imagePositionY = newHeight > screenY ? 40 : (screenY - newHeight) / 2;" +
+                    "imagePositionX = trueWidth > screenX ? " +
+                        "(screenX - 680) / 2 - 35 : " +
+                        "(trueWidth - 680) / 2;" +
 
                 "/* Skip zooming as redundant if there is no need for it */" +
-                "if (trueWidth < 701 || zoomedImage !== null) {" +
+                "if (trueWidth < 713 || zoomedImage !== null) {" +
                     "return false;" +
                 "}" +
 
@@ -208,9 +209,8 @@ function getScripts() {
                 "img.style.width = newWidth;" +
                 "img.style.height = newHeight;" +
                 "img.style.border = '4px solid white';" +
-                "img.style.position = 'fixed';" +
-                "img.style.left = imagePositionX;" +
-                "img.style.top = imagePositionY;" +
+                "img.style.position = 'relative';" +
+                "img.style.left = -imagePositionX;" +
                 "img.id = 'zoomedImage';" +
                 "img.style.removeProperty('max-width');" +
 
@@ -228,9 +228,8 @@ function getScripts() {
                 "zoomedImage.style.border = 0;" +
                 "zoomedImage.style.position = 'static';" +
                 "zoomedImage.style.maxWidth = 680;" +
-                "zoomedImage.id = '';" +
+                "zoomedImage.removeAttribute('id');" +
                 "zoomedImage.style.removeProperty('left');" +
-                "zoomedImage.style.removeProperty('top');" +
 
                 "document.documentElement.removeEventListener('click', zoomNormal, false);" +
             "}" +
