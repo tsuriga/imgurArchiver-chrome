@@ -4,12 +4,7 @@ Chrome extension for creating barebone replicas of imgur albums for archiving
 
 ## CHANGELOG ##
 
-* v1.0.0 first functioning version
-* v1.1.0 layout fixing to match original appearance on imgur
-* v1.1.1 proper extension icon
-* v1.1.2 updated icon
-* v1.2.0 image resizing script bundled
-* v1.2.1 style fixes and improved image resizing
+* v1.0.0 first released version
 
 ## IDEAS ##
 
@@ -28,6 +23,10 @@ pull requests or create your own version.
 * Test the zooming with a variety of different image sizes in different window
   sizes, it may have some quirky behaviours for combinations I did not test
   for. The effect could be animated too with either CSS or JavaScript
+* Maybe use offsetWidth and offsetHeight so that there's no need to take
+  borders into account manually
+* Only attach event listeners to images that need zoom and remove links from
+  those that don't – like it is on imgur
 
 ## AUTHORS ##
 

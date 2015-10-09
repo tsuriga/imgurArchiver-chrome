@@ -47,6 +47,7 @@ function generateArchive(album) {
     var htmlContent = '<html>' +
         '<head>' +
             '<meta charset="utf-8">' +
+            '<title>' + getTitle() + '</title>' +
             getStyles() +
             getScripts() +
         '</head>' +
@@ -118,10 +119,11 @@ function getStyles() {
     stylesStr += '.post-header {' +
         'width: 640px;' +
         'padding: 10px 20px;' +
-        'background: #262626;' +
+        'background: rgba(38, 38, 38, .9);' +
         'border-radius: 5px 5px 0 0;' +
         'box-shadow: 0 4px 4px -2px rgba(0, 0, 0, .2);' +
-        'position: relative;' +
+        'position: fixed;' +
+        'top: 0;' +
     '}';
 
     stylesStr += '.post-title {' +
@@ -164,6 +166,10 @@ function getStyles() {
         'box-shadow: 0 4px 4px -2px rgba(0, 0, 0, .2), 0 -4px 4px -2px rgba(0, 0, 0, .2);' +
     '}';
 
+    stylesStr += 'body {' +
+        'margin: 0;' +
+    '}';
+
     stylesStr += 'a {' +
         'color: #4E76C9;' +
         'text-decoration: none;' +
@@ -175,7 +181,9 @@ function getStyles() {
 function getScripts() {
     return '<script type="application/javascript">' +
         "window.addEventListener('load', function () {" +
-            "var zoomAnchors = document.documentElement.querySelectorAll('.zoom')," +
+            "var dom = document.documentElement," +
+                "zoomAnchors = dom.querySelectorAll('.zoom')," +
+                "postContainer = dom.querySelector('.post-container')," +
                 "originalWidth," +
                 "originalHeight;" +
 
@@ -185,7 +193,7 @@ function getScripts() {
                 "var screenX = window.innerWidth," +
                     "screenY = window.innerHeight," +
 
-                    "zoomedImage = document.documentElement.querySelector('#zoomedImage')," +
+                    "zoomedImage = dom.querySelector('#zoomedImage')," +
                     "img = this.children[0]," +
 
                     "trueWidth = img.naturalWidth," +
@@ -215,13 +223,13 @@ function getScripts() {
                 "img.style.removeProperty('max-width');" +
 
                 "e.stopPropagation();" +
-                "document.documentElement.addEventListener('click', zoomNormal, false);" +
+                "dom.addEventListener('click', zoomNormal, false);" +
             "}" +
 
             "function zoomNormal(e) {" +
                 "e.preventDefault();" +
 
-                "var zoomedImage = document.documentElement.querySelector('#zoomedImage');" +
+                "var zoomedImage = dom.querySelector('#zoomedImage');" +
 
                 "zoomedImage.style.width = originalWidth;" +
                 "zoomedImage.style.height = originalHeight;" +
@@ -231,14 +239,21 @@ function getScripts() {
                 "zoomedImage.removeAttribute('id');" +
                 "zoomedImage.style.removeProperty('left');" +
 
-                "document.documentElement.removeEventListener('click', zoomNormal, false);" +
+                "dom.removeEventListener('click', zoomNormal, false);" +
             "}" +
 
             "for (var i = 0; i < zoomAnchors.length; i++) {" +
                 "zoomAnchors[i].addEventListener('click', zoomIn, false);" +
             "}" +
+
+            "/* Move the first item in the post away from under the header */" +
+            "postContainer.children[1].style.marginTop = postContainer.children[0].offsetHeight;" +
         "});" +
     '</script>';
+}
+
+function getTitle() {
+    return escapeHtml(document.documentElement.querySelector('.post-title').textContent);
 }
 
 function parseAlbum(album) {
@@ -252,12 +267,12 @@ function parseAlbum(album) {
         images = album.data.images,
 
         titleMeta = 'by <a href="' + authorAnchor.href + '">' +
-            authorAnchor.textContent + '</a> · ' + exactTime,
+            escapeHtml(authorAnchor.textContent) + '</a> · ' + exactTime,
 
         albumHtml = '<div class="post-container">';
 
     albumHtml += '<div class="post-header">' +
-        '<h1 class="post-title font-opensans-bold">' + title + '</h1>' +
+        '<h1 class="post-title font-opensans-bold">' + escapeHtml(title) + '</h1>' +
         '<p class="post-title-meta font-opensans-semibold">' + titleMeta + '</p>' +
     '</div>';
 
@@ -277,7 +292,7 @@ function parseAlbum(album) {
         '</div>';
 
         albumHtml += '<p class="post-image-description font-opensans-reg">' +
-            images[i].description +
+            escapeHtml(images[i].description) +
         '</p>';
 
         albumHtml += '</div>';
@@ -298,4 +313,14 @@ function loadAlbum(albumId) {
 
     xhr.open('GET', url);
     xhr.send(null);
+}
+
+/* Author: bjornd @ http://stackoverflow.com/a/6234804 */
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
