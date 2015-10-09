@@ -3,7 +3,7 @@
 
     "name": "imgur Archiver",
     "description": "This extension enables creating a clean version of an imgur album without comments for saving",
-    "version": "1.2.0",
+    "version": "1.2.1",
 
     "browser_action": {
         "default_icon": "archiver.png",

@@ -145,6 +145,7 @@ function getStyles() {
 
     stylesStr += '.post-image {' +
         'background: #181817;' +
+        'text-align: center;' +
     '}';
 
     stylesStr += '.post-image-description {' +
@@ -174,8 +175,8 @@ function getScripts() {
             "function zoomIn(e) {" +
                 "e.preventDefault();" +
 
-                "var x = window.innerWidth," +
-                    "y = window.innerHeight," +
+                "var screenX = window.innerWidth," +
+                    "screenY = window.innerHeight," +
 
                     "zoomedImage = document.documentElement.querySelector('#zoomedImage')," +
                     "img = this.children[0]," +
@@ -183,10 +184,13 @@ function getScripts() {
                     "trueWidth = img.naturalWidth," +
                     "trueHeight = img.naturalHeight," +
 
-                    "newWidth = trueWidth > x ? trueWidth - 20 : trueWidth," +
-                    "newHeight = trueHeight * newWidth / trueWidth;" +
+                    "newWidth = trueWidth > screenX ? screenX - 40 : trueWidth," +
+                    "newHeight = trueHeight * newWidth / trueWidth," +
 
-                "/* Skip zooming as redundant if there is little or no need for it */" +
+                    "imagePositionX = (screenX - newWidth) / 2," +
+                    "imagePositionY = newHeight > screenY ? 40 : (screenY - newHeight) / 2;" +
+
+                "/* Skip zooming as redundant if there is no need for it */" +
                 "if (trueWidth < 701 || zoomedImage !== null) {" +
                     "return false;" +
                 "}" +
@@ -197,9 +201,11 @@ function getScripts() {
                 "img.style.width = newWidth;" +
                 "img.style.height = newHeight;" +
                 "img.style.border = '4px solid white';" +
-                "img.style.position = 'relative';" +
-                "img.style.removeProperty('max-width');" +
+                "img.style.position = 'fixed';" +
+                "img.style.left = imagePositionX;" +
+                "img.style.top = imagePositionY;" +
                 "img.id = 'zoomedImage';" +
+                "img.style.removeProperty('max-width');" +
 
                 "e.stopPropagation();" +
                 "document.documentElement.addEventListener('click', zoomNormal, false);" +
@@ -216,6 +222,8 @@ function getScripts() {
                 "zoomedImage.style.position = 'static';" +
                 "zoomedImage.style.maxWidth = 680;" +
                 "zoomedImage.id = '';" +
+                "zoomedImage.style.removeProperty('left');" +
+                "zoomedImage.style.removeProperty('top');" +
 
                 "document.documentElement.removeEventListener('click', zoomNormal, false);" +
             "}" +

@@ -9,16 +9,17 @@ Chrome extension for creating barebone replicas of imgur albums for archiving
 * v1.1.1 proper extension icon
 * v1.1.2 updated icon
 * v1.2.0 image resizing script bundled and ideas update
+* v1.2.1 style fixes and improved image resizing
 
 ## TODO ##
 * v1.3.0 wrap into a real chrome extension
 
 ## IDEAS ##
 
-If you wish to develop this further, feel free to fork and either push pull
-requests or create your own version. These are some of the ideas I might
-start working on if there's a need for them. If I do (or you will), let's put
-them in the TODO list as planned items with planned release version.
+These are some of the ideas I might start working on if there's a need for
+them. If I do, I will put them under TODO header with a planned release
+version. If you wish to develop this further, feel free to fork and either push
+pull requests or create your own version.
 
 * Enable opening a file saving dialog just by hitting the extension icon
 * Figure out if it's possible to do this without writing all the data in the
@@ -26,11 +27,14 @@ them in the TODO list as planned items with planned release version.
   from the address bar into a comment at the top of the saved HTML page: "saved
   from url=..."
 * Code cleanup. Move styles, scripts and fonts into separate files if possible
-* Better icon. I created the current one from imgur's favicon with Paint.NET
-* Improve the zooming to take window and image dimensions better into account.
-  Currently the functionality is really barebone and probably has a lot of
-  quirky behaviours with different image sizes. The effect could be animated
-  too with either CSS or JavaScript
+* Better icon. I derived the current one from imgur's favicon with Paint.NET
+* Test the zooming with a variety of different image sizes in different window
+  sizes, it may have some quirky behaviours for combinations I did not test
+  for. The effect could be animated too with either CSS or JavaScript
+
+## AUTHORS ##
+
+* Tsuri Kamppuri
 
 ## LICENSES ##
 
