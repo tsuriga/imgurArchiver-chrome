@@ -28,6 +28,8 @@ pull requests or create your own version.
 * Only attach event listeners to images that need zoom and remove links from
   those that don't – like it is on imgur
 * Use imgur's actual API
+* Add error handling: I have not tested what the button does on other web pages
+  other than imgur
 
 ## AUTHORS ##
 
