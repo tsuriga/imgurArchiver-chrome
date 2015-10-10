@@ -253,7 +253,7 @@ function getScripts() {
 }
 
 function getTitle() {
-    return escapeHtml(document.documentElement.querySelector('.post-title').textContent);
+    return document.documentElement.querySelector('.post-title').textContent;
 }
 
 function parseAlbum(album) {
@@ -267,12 +267,12 @@ function parseAlbum(album) {
         images = album.data.images,
 
         titleMeta = 'by <a href="' + authorAnchor.href + '">' +
-            escapeHtml(authorAnchor.textContent) + '</a> · ' + exactTime,
+            authorAnchor.textContent + '</a> · ' + exactTime,
 
         albumHtml = '<div class="post-container">';
 
     albumHtml += '<div class="post-header">' +
-        '<h1 class="post-title font-opensans-bold">' + escapeHtml(title) + '</h1>' +
+        '<h1 class="post-title font-opensans-bold">' + title + '</h1>' +
         '<p class="post-title-meta font-opensans-semibold">' + titleMeta + '</p>' +
     '</div>';
 
@@ -292,7 +292,7 @@ function parseAlbum(album) {
         '</div>';
 
         albumHtml += '<p class="post-image-description font-opensans-reg">' +
-            escapeHtml(images[i].description) +
+            images[i].description +
         '</p>';
 
         albumHtml += '</div>';
@@ -313,14 +313,4 @@ function loadAlbum(albumId) {
 
     xhr.open('GET', url);
     xhr.send(null);
-}
-
-/* Author: bjornd @ http://stackoverflow.com/a/6234804 */
-function escapeHtml(unsafe) {
-    return unsafe
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
 }

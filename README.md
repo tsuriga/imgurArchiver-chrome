@@ -27,6 +27,7 @@ pull requests or create your own version.
   borders into account manually
 * Only attach event listeners to images that need zoom and remove links from
   those that don't – like it is on imgur
+* Use imgur's actual API
 
 ## AUTHORS ##
 
@@ -36,3 +37,7 @@ pull requests or create your own version.
 
 The Chrome extension is under MIT License and the embedded Google OpenSans
 typefaces are under Apache License 2.0.
+
+## DISCLAIMER ##
+
+NOT AFFILIATED WITH OR APPROVED BY IMGUR

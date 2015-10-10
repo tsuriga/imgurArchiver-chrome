@@ -6,16 +6,21 @@
     "version": "1.0.0",
 
     "browser_action": {
-        "default_icon": "archiver.png",
+        "default_icon": "icon_19.png",
         "default_title": "Archive album",
         "default_popup": "archiver.html"
+    },
+
+    "icons": {
+        "48": "icon_48.png",
+        "128": "icon_128.png"
     },
 
     "author": "Tsuri Kamppuri",
 
     "permissions": [
-        "tabs",
-        "http://imgur.com/gallery"
+        "activeTab",
+        "http://imgur.com/"
     ],
 
     "short_name": "imgurAr"
