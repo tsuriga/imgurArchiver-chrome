@@ -19,12 +19,12 @@ pull requests or create your own version.
   from the address bar into a comment at the top of the saved HTML page: "saved
   from url=..."
 * Code cleanup. Move styles, scripts and fonts into separate files if possible
-* Better icon. I derived the current one from imgur's favicon with Paint.NET
 * Test the zooming with a variety of different image sizes in different window
   sizes, it may have some quirky behaviours for combinations I did not test
   for. The effect could be animated too with either CSS or JavaScript
-* Maybe use offsetWidth and offsetHeight so that there's no need to take
-  borders into account manually
+* Maybe use offsetWidth instead of clientWidth so that there's no need to take
+  borders into account manually. Related: many of the magic numbers have been
+  winged and not really calculated to exact pixels
 * Only attach event listeners to images that need zoom and remove links from
   those that don't – like it is on imgur
 * Use imgur's actual API
