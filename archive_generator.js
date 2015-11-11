@@ -44,15 +44,17 @@ limitations under the License.
 loadAlbum(window.location.pathname.replace('/gallery/', ''));
 
 function generateArchive(album) {
-    var htmlContent = '<html>' +
+    var albumContent = parseAlbum(album),
+        errorHasOccurred = albumContent === 'Archiving failed',
+        htmlContent = '<html>' +
         '<head>' +
             '<meta charset="utf-8">' +
             '<title>' + getTitle() + '</title>' +
-            getStyles() +
-            getScripts() +
+            getStyles(errorHasOccurred) +
+            getScripts(errorHasOccurred) +
         '</head>' +
         '<body>' +
-            parseAlbum(album) +
+            albumContent +
         '</body>' +
     '</html>';
 
@@ -62,8 +64,19 @@ function generateArchive(album) {
     });
 }
 
-function getStyles() {
+function getStyles(errorHasOccurred) {
     var stylesStr = '<style>';
+
+    if (errorHasOccurred) {
+        stylesStr += 'body {' +
+            'background-color: #121211;' +
+            'font-size: 24px;' +
+            'color: #F2F2F2;' +
+            'text-align: center;' +
+        '}';
+
+        return stylesStr + '</style>';
+    }
 
     stylesStr += '@font-face {' +
         'font-family: open_sansbold;' +
@@ -107,6 +120,7 @@ function getStyles() {
     stylesStr += 'body {' +
         'background-color: #121211;' +
         'font-size: 14px;' +
+        'margin: 0;' +
     '}';
 
     stylesStr += '.post-container {' +
@@ -114,6 +128,7 @@ function getStyles() {
         'background: #2B2B2B;' +
         'border-radius: 5px;' +
         'margin: 0 auto;' +
+        'padding-bottom: 20px;' +
     '}';
 
     stylesStr += '.post-header {' +
@@ -138,6 +153,17 @@ function getStyles() {
         'margin: 0;' +
     '}';
 
+    stylesStr += '.post-description {' +
+        'background: #242424;' +
+        'padding: 20px;' +
+        'margin: 20px 20px 0;' +
+        'color: #CCC;' +
+        'border-radius: 5px;' +
+        'overflow: hidden;' +
+        'white-space: pre-wrap;' +
+        'word-wrap: break-word;' +
+    '}';
+
     stylesStr += '.post-image-title {' +
         'padding: 16px 20px;' +
         'color: #CCC;' +
@@ -155,6 +181,7 @@ function getStyles() {
         'background: #2E2E2E;' +
         'color: #CCC;' +
         'padding: 20px;' +
+        'margin-top: 0;' +
         'overflow: hidden;' +
         'white-space: pre-wrap;' +
         'word-wrap: break-word;' +
@@ -166,20 +193,17 @@ function getStyles() {
         'box-shadow: 0 4px 4px -2px rgba(0, 0, 0, .2), 0 -4px 4px -2px rgba(0, 0, 0, .2);' +
     '}';
 
-    stylesStr += 'body {' +
-        'margin: 0;' +
-    '}';
-
     stylesStr += 'a {' +
         'color: #4E76C9;' +
         'text-decoration: none;' +
+        'cursor: zoom-in;' +
     '}';
 
     return stylesStr + '</style>';
 }
 
-function getScripts() {
-    return '<script type="application/javascript">' +
+function getScripts(errorHasOccurred) {
+    return errorHasOccurred ? '' : '<script type="application/javascript">' +
         "window.addEventListener('load', function () {" +
             "var dom = document.documentElement," +
                 "zoomAnchors = dom.querySelectorAll('.zoom')," +
@@ -206,9 +230,12 @@ function getScripts() {
                         "(screenX - 680) / 2 - 35 : " +
                         "(trueWidth - 680) / 2;" +
 
-                "/* Skip zooming as redundant if there is no need for it */" +
-                "if (trueWidth < 713 || zoomedImage !== null) {" +
-                    "return false;" +
+                "if (zoomedImage !== null) {" +
+                    "zoomNormal(e);" +
+
+                    "if (img === zoomedImage) {" +
+                        "return false;" +
+                    "}" +
                 "}" +
 
                 "originalWidth = img.clientWidth;" +
@@ -219,6 +246,7 @@ function getScripts() {
                 "img.style.border = '4px solid white';" +
                 "img.style.position = 'relative';" +
                 "img.style.left = -imagePositionX;" +
+                "img.style.cursor = 'zoom-out';" +
                 "img.id = 'zoomedImage';" +
                 "img.style.removeProperty('max-width');" +
 
@@ -236,6 +264,7 @@ function getScripts() {
                 "zoomedImage.style.border = 0;" +
                 "zoomedImage.style.position = 'static';" +
                 "zoomedImage.style.maxWidth = 680;" +
+                "zoomedImage.style.cursor = 'zoom-in';" +
                 "zoomedImage.removeAttribute('id');" +
                 "zoomedImage.style.removeProperty('left');" +
 
@@ -243,10 +272,16 @@ function getScripts() {
             "}" +
 
             "for (var i = 0; i < zoomAnchors.length; i++) {" +
-                "zoomAnchors[i].addEventListener('click', zoomIn, false);" +
+                "/* Remove zooming anchors from images that don't need it */" +
+                "var img = zoomAnchors[i].children[0];" +
+
+                "if (img.naturalWidth < 713) {" +
+                    "zoomAnchors[i].parentNode.replaceChild(img, zoomAnchors[i]);" +
+                "} else {" +
+                    "zoomAnchors[i].addEventListener('click', zoomIn, false);" +
+                "}" +
             "}" +
 
-            "/* Move the first item in the post away from under the header */" +
             "postContainer.children[1].style.marginTop = postContainer.children[0].offsetHeight;" +
         "});" +
     '</script>';
@@ -257,11 +292,20 @@ function getTitle() {
 }
 
 function parseAlbum(album) {
+    if (!album ||
+        !album.hasOwnProperty('data') ||
+        !album.data.hasOwnProperty('images') ||
+        album.data.images.length < 1
+    ) {
+        return 'Archiving failed';
+    }
+
     var albumContent = '',
 
         dom = document.documentElement,
         title = dom.querySelector('.post-title').textContent,
         authorAnchor = dom.querySelector('.post-title-meta a'),
+        postDescription = dom.querySelector('.post-description').textContent,
         exactTime = dom.querySelector('.exact-time').title,
 
         images = album.data.images,
@@ -279,9 +323,11 @@ function parseAlbum(album) {
     for (var i = 0; i < images.length; i++) {
         albumHtml += '<div class="post-image-container">';
 
-        albumHtml += '<h2 class="post-image-title font-opensans-semibold">' +
-            images[i].title +
-        '</h2>';
+        if (images[i].title.length > 0) {
+            albumHtml += '<h2 class="post-image-title font-opensans-semibold">' +
+                images[i].title +
+            '</h2>';
+        }
 
         var imgSrc = 'http://i.imgur.com/' + images[i].hash + images[i].ext;
 
@@ -291,11 +337,17 @@ function parseAlbum(album) {
             '</a>' +
         '</div>';
 
-        albumHtml += '<p class="post-image-description font-opensans-reg">' +
-            images[i].description +
-        '</p>';
+        if (images[i].description.length > 0) {
+            albumHtml += '<p class="post-image-description font-opensans-reg">' +
+                images[i].description +
+            '</p>';
+        }
 
         albumHtml += '</div>';
+    }
+
+    if (postDescription.length > 0) {
+        albumHtml += '<div class="post-description font-opensans-reg">' + postDescription + '</div>';
     }
 
     return albumHtml + '</div>';
@@ -306,9 +358,15 @@ function loadAlbum(albumId) {
         xhr = new XMLHttpRequest();
 
     xhr.addEventListener('load', function () {
-        var album = JSON.parse(this.responseText.replace('\n', '<br/>'));
+        if (this.status === 200 && this.responseText.length > 0) {
+            generateArchive(JSON.parse(this.responseText.replace('\n', '<br/>')));
+        } else {
+            generateArchive();
+        }
+    });
 
-        generateArchive(album);
+    xhr.addEventListener('error', function () {
+        generateArchive();
     });
 
     xhr.open('GET', url);

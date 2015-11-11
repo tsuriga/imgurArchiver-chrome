@@ -4,7 +4,14 @@ Chrome extension for creating barebone replicas of imgur albums for archiving
 
 ## CHANGELOG ##
 
-* v1.0.0 first released version
+* v1.0.0 (2015-10-10): first released version
+* v1.1.0 (2015-11-11): feature, style and error handling improvements
+  * post descriptions are now archived as well (omitted previously)
+  * an image can now be zoomed in when another one is already zoomed in
+  * added zoom in and zoom out cursors
+  * small images don't have zoom in anchors anymore
+  * empty image titles and descriptions are omitted
+  * if an error occurs when fetching album data, failure message is now shown
 
 ## IDEAS ##
 
@@ -19,26 +26,20 @@ pull requests or create your own version.
   from the address bar into a comment at the top of the saved HTML page: "saved
   from url=..."
 * Code cleanup. Move styles, scripts and fonts into separate files if possible
-* Test the zooming with a variety of different image sizes in different window
-  sizes, it may have some quirky behaviours for combinations I did not test
-  for. The effect could be animated too with either CSS or JavaScript
+* Animate the zoom effect
 * Maybe use offsetWidth instead of clientWidth so that there's no need to take
   borders into account manually. Related: many of the magic numbers have been
   winged and not really calculated to exact pixels
-* Only attach event listeners to images that need zoom and remove links from
-  those that don't – like it is on imgur
 * Use imgur's actual API
-* Add error handling: I have not tested what the button does on other web pages
-  other than imgur
-
-## AUTHORS ##
-
-* Tsuri Kamppuri
 
 ## LICENSES ##
 
 The Chrome extension is under MIT License and the embedded Google OpenSans
 typefaces are under Apache License 2.0.
+
+## AUTHORS ##
+
+* Tsuri Kamppuri
 
 ## DISCLAIMER ##
 
