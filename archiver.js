@@ -23,8 +23,9 @@ THE SOFTWARE.
 */
 
 chrome.runtime.onMessage.addListener(function (request, sender) {
-    if (request.action === 'getSource') {
-        var archiveContent = "data:text/html;charset=utf-8," + encodeURIComponent(request.source);
+    if (request.action === 'openTab') {
+        var archiveContent = "data:text/html;charset=utf-8," +
+            encodeURIComponent(request.source);
 
         chrome.tabs.create({url: archiveContent});
     }

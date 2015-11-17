@@ -1,6 +1,8 @@
 # imgurArchiver-chrome
 
-Chrome extension for creating barebone replicas of imgur albums for archiving
+Chrome extension for creating barebone replicas of imgur albums for archiving.
+The created copies are meant to be saved as fully offline versions to one's
+computer. They mimic the appearances and functionality of albums on imgur.
 
 ## CHANGELOG ##
 
@@ -12,6 +14,14 @@ Chrome extension for creating barebone replicas of imgur albums for archiving
   * small images don't have zoom in anchors anymore
   * empty image titles and descriptions are omitted
   * if an error occurs when fetching album data, failure message is now shown
+* v1.2.0 (2015-11-17): bug fixes and stylistic improvements
+  * archiving now works also for albums with only one image
+  * username link now has normal link cursor
+  * omitted post description won't stop archiving anymore
+  * errors are now logged to console and functions have docblocks
+  * the Archive button now shows an error page if pressed while not browsing an
+    imgur gallery
+  * both single and multiple image albums with videos (gifs) should now work
 
 ## IDEAS ##
 

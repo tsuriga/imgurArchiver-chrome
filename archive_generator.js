@@ -41,33 +41,211 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-loadAlbum(window.location.pathname.replace('/gallery/', ''));
+init();
 
-function generateArchive(album) {
-    var albumContent = parseAlbum(album),
-        errorHasOccurred = albumContent === 'Archiving failed',
-        htmlContent = '<html>' +
-        '<head>' +
-            '<meta charset="utf-8">' +
-            '<title>' + getTitle() + '</title>' +
-            getStyles(errorHasOccurred) +
-            getScripts(errorHasOccurred) +
-        '</head>' +
-        '<body>' +
-            albumContent +
-        '</body>' +
-    '</html>';
+/**
+ * Prechecks conditions and initializes archiving procedure
+ */
+function init() {
+    if (window.location.hostname !== 'imgur.com') {
+        return openErrorPage('must be on imgur to archive an album');
+    }
 
+    var albumId = window.location.pathname.replace('/gallery/', '');
+
+    if (albumId.length < 1) {
+        return openErrorPage('could not read imgur album ID from URL');
+    }
+
+    loadAlbum(albumId);
+}
+
+/**
+ * Sends a message to the background script to open a new tab
+ *
+ * @param string output
+ */
+function openTab(output) {
     chrome.runtime.sendMessage({
-        action: 'getSource',
-        source: htmlContent
+        action: 'openTab',
+        source: output
     });
 }
 
-function getStyles(errorHasOccurred) {
+/**
+ * Loads album data from imgur, generates HTML code for
+ * the album and sends the generated page to a new tab
+ *
+ * @param string albumId
+ */
+function loadAlbum(albumId) {
+    var url = 'http://imgur.com/ajaxalbums/getimages/' + albumId + '/hit.json?all=true',
+        xhr = new XMLHttpRequest();
+
+    xhr.addEventListener('load', function () {
+        if (this.status === 200) {
+            if (this.responseText.length < 1) {
+                return openErrorPage('imgur returned empty content');
+            }
+
+            var albumData = JSON.parse(this.responseText.replace('\n', '<br/>'));
+
+            if (!albumData || !albumData.data) {
+                return openErrorPage('imgur returned unknown JSON');
+            } else if (!albumData.data.images) {
+                return openTab(generateAlbum(generateAlbumFromDom()));
+            }
+
+            return openTab(generateAlbum(generateAlbumFromJson(albumData)));
+        } else {
+            return openErrorPage('imgur returned status code ' + this.status);
+        }
+    });
+
+    xhr.addEventListener('error', function () {
+        openErrorPage();
+    });
+
+    xhr.open('GET', url);
+    xhr.send();
+}
+
+/**
+ * @param string logMessage
+ */
+function openErrorPage(logMessage) {
+    if (logMessage) {
+        console.log('Archiving error: ' + logMessage);
+    }
+
+    openTab(generateAlbum('Failed to create the archive. Make sure you are browsing imgur.com/gallery/ when pressing the Archive button', true));
+}
+
+/**
+ * Generates album HTML code
+ *
+ * @param string albumContentHtml
+ * @param bool isBarebone
+ * @return string
+ */
+function generateAlbum(albumContentHtml, isBarebone) {
+    return '<html>' +
+        '<head>' +
+            '<meta charset="utf-8">' +
+            '<title>' + (isBarebone ? 'Archiving error' : getTitle()) + '</title>' +
+            getStyles(isBarebone) +
+            getScripts(isBarebone) +
+        '</head>' +
+        '<body>' +
+            albumContentHtml +
+        '</body>' +
+    '</html>';
+}
+
+/**
+ * Parses album from current DOM. Only used for albums with one image.
+ *
+ * @return string
+ */
+function generateAlbumFromDom() {
+    var dom = document.documentElement,
+        img = dom.querySelector('.post-image img'),
+        video = dom.querySelector('.post-image source')
+        description = dom.querySelector('.post-image-description'),
+        images = [
+            {
+                title: '', // omitted to avoid title popping up twice
+                hash: (img ? img : video).src.split('/').pop().split('.').shift(),
+                description: description ? description.textContent : '',
+                ext: '.' + (img ? img.src.split('.').pop() : 'gif'),
+            }
+        ];
+
+    return generateAlbumContent(images);
+}
+
+/**
+ * Parses album image data from JSON. The rest of the album data is still read from DOM
+ *
+ * @param object albumData
+ * @return string
+ */
+function generateAlbumFromJson(albumData) {
+    return generateAlbumContent(albumData.data.images);
+}
+
+/**
+ * Generates HTML code for the album body contents
+ *
+ * @param object images
+ * @return string
+ */
+function generateAlbumContent(images) {
+    var dom = document.documentElement,
+        title = dom.querySelector('.post-title').textContent,
+        authorAnchor = dom.querySelector('.post-title-meta a'),
+        postDescriptionDiv = dom.querySelector('.post-description'),
+        postDescription = postDescriptionDiv ? postDescriptionDiv.textContent : '',
+        exactTime = dom.querySelector('.exact-time').title,
+
+        titleMeta = 'by <a href="' + authorAnchor.href + '">' +
+            authorAnchor.textContent + '</a> · ' + exactTime,
+
+        albumContent = '<div class="post-container">';
+
+    albumContent += '<div class="post-header">' +
+        '<h1 class="post-title font-opensans-bold">' + title + '</h1>' +
+        '<p class="post-title-meta font-opensans-semibold">' + titleMeta + '</p>' +
+    '</div>';
+
+    for (var i = 0; i < images.length; i++) {
+        albumContent += '<div class="post-image-container">';
+
+        if (images[i].title.length > 0) {
+            albumContent += '<h2 class="post-image-title font-opensans-semibold">' +
+                images[i].title +
+            '</h2>';
+        }
+
+        var imgSrc = 'http://i.imgur.com/' + images[i].hash + images[i].ext;
+
+        albumContent += '<div class="post-image">' +
+            '<a href="' + imgSrc + '" class="zoom">' +
+                '<img src="' + imgSrc + '" style="max-width: 680px;" />' +
+            '</a>' +
+        '</div>';
+
+        if (images[i].description.length > 0) {
+            albumContent += '<p class="post-image-description font-opensans-reg">' +
+                images[i].description +
+            '</p>';
+        }
+
+        albumContent += '</div>';
+    }
+
+    if (postDescription.length > 0) {
+        albumContent += '<div class="post-description font-opensans-reg">' + postDescription + '</div>';
+    }
+
+    return albumContent + '</div>';
+}
+
+/**
+ * @return string
+ */
+function getTitle() {
+    return document.documentElement.querySelector('.post-title').textContent;
+}
+
+/**
+ * @param bool isBarebone
+ * @return string
+ */
+function getStyles(isBarebone) {
     var stylesStr = '<style>';
 
-    if (errorHasOccurred) {
+    if (isBarebone) {
         stylesStr += 'body {' +
             'background-color: #121211;' +
             'font-size: 24px;' +
@@ -127,7 +305,7 @@ function getStyles(errorHasOccurred) {
         'width: 680px;' +
         'background: #2B2B2B;' +
         'border-radius: 5px;' +
-        'margin: 0 auto;' +
+        'margin: 0 auto 20px auto;' +
         'padding-bottom: 20px;' +
     '}';
 
@@ -188,7 +366,7 @@ function getStyles(errorHasOccurred) {
     '}';
 
     stylesStr += '.post-image-container {' +
-        'margin: 0;' +
+        'margin: 0 0 15px 0;' +
         'padding: 0;' +
         'box-shadow: 0 4px 4px -2px rgba(0, 0, 0, .2), 0 -4px 4px -2px rgba(0, 0, 0, .2);' +
     '}';
@@ -196,14 +374,21 @@ function getStyles(errorHasOccurred) {
     stylesStr += 'a {' +
         'color: #4E76C9;' +
         'text-decoration: none;' +
+    '}';
+
+    stylesStr += '.zoom {' +
         'cursor: zoom-in;' +
     '}';
 
     return stylesStr + '</style>';
 }
 
-function getScripts(errorHasOccurred) {
-    return errorHasOccurred ? '' : '<script type="application/javascript">' +
+/**
+ * @param bool isBarebone
+ * @return string
+ */
+function getScripts(isBarebone) {
+    return isBarebone ? '' : '<script type="application/javascript">' +
         "window.addEventListener('load', function () {" +
             "var dom = document.documentElement," +
                 "zoomAnchors = dom.querySelectorAll('.zoom')," +
@@ -285,90 +470,4 @@ function getScripts(errorHasOccurred) {
             "postContainer.children[1].style.marginTop = postContainer.children[0].offsetHeight;" +
         "});" +
     '</script>';
-}
-
-function getTitle() {
-    return document.documentElement.querySelector('.post-title').textContent;
-}
-
-function parseAlbum(album) {
-    if (!album ||
-        !album.hasOwnProperty('data') ||
-        !album.data.hasOwnProperty('images') ||
-        album.data.images.length < 1
-    ) {
-        return 'Archiving failed';
-    }
-
-    var albumContent = '',
-
-        dom = document.documentElement,
-        title = dom.querySelector('.post-title').textContent,
-        authorAnchor = dom.querySelector('.post-title-meta a'),
-        postDescription = dom.querySelector('.post-description').textContent,
-        exactTime = dom.querySelector('.exact-time').title,
-
-        images = album.data.images,
-
-        titleMeta = 'by <a href="' + authorAnchor.href + '">' +
-            authorAnchor.textContent + '</a> · ' + exactTime,
-
-        albumHtml = '<div class="post-container">';
-
-    albumHtml += '<div class="post-header">' +
-        '<h1 class="post-title font-opensans-bold">' + title + '</h1>' +
-        '<p class="post-title-meta font-opensans-semibold">' + titleMeta + '</p>' +
-    '</div>';
-
-    for (var i = 0; i < images.length; i++) {
-        albumHtml += '<div class="post-image-container">';
-
-        if (images[i].title.length > 0) {
-            albumHtml += '<h2 class="post-image-title font-opensans-semibold">' +
-                images[i].title +
-            '</h2>';
-        }
-
-        var imgSrc = 'http://i.imgur.com/' + images[i].hash + images[i].ext;
-
-        albumHtml += '<div class="post-image">' +
-            '<a href="' + imgSrc + '" class="zoom">' +
-                '<img src="' + imgSrc + '" style="max-width: 680px;" />' +
-            '</a>' +
-        '</div>';
-
-        if (images[i].description.length > 0) {
-            albumHtml += '<p class="post-image-description font-opensans-reg">' +
-                images[i].description +
-            '</p>';
-        }
-
-        albumHtml += '</div>';
-    }
-
-    if (postDescription.length > 0) {
-        albumHtml += '<div class="post-description font-opensans-reg">' + postDescription + '</div>';
-    }
-
-    return albumHtml + '</div>';
-}
-
-function loadAlbum(albumId) {
-    var url = 'http://imgur.com/ajaxalbums/getimages/' + albumId + '/hit.json?all=true',
-        xhr = new XMLHttpRequest();
-
-    xhr.addEventListener('load', function () {
-        if (this.status === 200 && this.responseText.length > 0) {
-            generateArchive(JSON.parse(this.responseText.replace('\n', '<br/>')));
-        } else {
-            generateArchive();
-        }
-    });
-
-    xhr.addEventListener('error', function () {
-        generateArchive();
-    });
-
-    xhr.open('GET', url);
-    xhr.send(null);
 }
