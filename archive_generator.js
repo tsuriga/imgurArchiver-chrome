@@ -103,7 +103,7 @@ function loadAlbum(albumId) {
     });
 
     xhr.addEventListener('error', function () {
-        openErrorPage();
+        openErrorPage('network error');
     });
 
     xhr.open('GET', url);
@@ -115,7 +115,7 @@ function loadAlbum(albumId) {
  */
 function openErrorPage(logMessage) {
     if (logMessage) {
-        console.log('Archiving error: ' + logMessage);
+        console.log('Archiving failed: ' + logMessage);
     }
 
     openTab(generateAlbum('Failed to create the archive. Make sure you are browsing imgur.com/gallery/ when pressing the Archive button', true));

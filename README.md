@@ -22,6 +22,7 @@ computer. They mimic the appearances and functionality of albums on imgur.
   * the Archive button now shows an error page if pressed while not browsing an
     imgur gallery
   * both single and multiple image albums with videos (gifs) should now work
+* v1.2.1 (2015-11-17): debug printing now includes a message on network error
 
 ## IDEAS ##
 
