@@ -399,21 +399,17 @@ function getScripts(isBarebone) {
             "function zoomIn(e) {" +
                 "e.preventDefault();" +
 
-                "var screenX = window.innerWidth," +
-                    "screenY = window.innerHeight," +
-
-                    "zoomedImage = dom.querySelector('#zoomedImage')," +
+                "var zoomedImage = dom.querySelector('#zoomedImage')," +
                     "img = this.children[0]," +
 
+                    "screenX = dom.clientWidth," +
                     "trueWidth = img.naturalWidth," +
                     "trueHeight = img.naturalHeight," +
 
-                    "newWidth = trueWidth > screenX ? screenX - 80 : trueWidth," +
+                    "newWidth = trueWidth > screenX - 20 ? screenX - 20 : trueWidth," +
                     "newHeight = trueHeight * newWidth / trueWidth," +
 
-                    "imagePositionX = trueWidth > screenX ? " +
-                        "(screenX - 680) / 2 - 35 : " +
-                        "(trueWidth - 680) / 2;" +
+                    "imageShiftLeft = screenX < 680 ? 0 : (680 - newWidth) / 2 - 5;"+
 
                 "if (zoomedImage !== null) {" +
                     "zoomNormal(e);" +
@@ -428,9 +424,9 @@ function getScripts(isBarebone) {
 
                 "img.style.width = newWidth;" +
                 "img.style.height = newHeight;" +
-                "img.style.border = '4px solid white';" +
+                "img.style.border = '5px solid white';" +
                 "img.style.position = 'relative';" +
-                "img.style.left = -imagePositionX;" +
+                "img.style.left = imageShiftLeft;" +
                 "img.style.cursor = 'zoom-out';" +
                 "img.id = 'zoomedImage';" +
                 "img.style.removeProperty('max-width');" +
@@ -460,7 +456,7 @@ function getScripts(isBarebone) {
                 "/* Remove zooming anchors from images that don't need it */" +
                 "var img = zoomAnchors[i].children[0];" +
 
-                "if (img.naturalWidth < 713) {" +
+                "if (img.naturalWidth < 710) {" +
                     "zoomAnchors[i].parentNode.replaceChild(img, zoomAnchors[i]);" +
                 "} else {" +
                     "zoomAnchors[i].addEventListener('click', zoomIn, false);" +
