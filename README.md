@@ -24,6 +24,7 @@ computer. They mimic the appearances and functionality of albums on imgur.
   * both single and multiple image albums with videos (gifs) should now work
 * v1.2.1 (2015-11-17): debug printing now includes a message on network error
 * v1.2.2 (2015-11-18): slightly improved zooming that mimics imgur better
+* v1.2.3 (2015-11-27): fixed to work when browsing over HTTPS
 
 ## IDEAS ##
 

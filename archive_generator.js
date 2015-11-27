@@ -79,7 +79,7 @@ function openTab(output) {
  * @param string albumId
  */
 function loadAlbum(albumId) {
-    var url = 'http://imgur.com/ajaxalbums/getimages/' + albumId + '/hit.json?all=true',
+    var url = window.location.protocol + '//imgur.com/ajaxalbums/getimages/' + albumId + '/hit.json?all=true',
         xhr = new XMLHttpRequest();
 
     xhr.addEventListener('load', function () {
