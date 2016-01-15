@@ -188,11 +188,11 @@ function generateAlbumContent(images) {
         postDescription = postDescriptionDiv ? postDescriptionDiv.textContent : '',
         exactTime = dom.querySelector('.exact-time').title,
 
-        titleMeta = 'by <a href="' + authorAnchor.href + '">' +
-            authorAnchor.textContent + '</a> · ' + exactTime,
-
+        titleMeta = authorAnchor ?
+            'by <a href="' + authorAnchor.href + '">' + authorAnchor.textContent + '</a> · ' : '',
         albumContent = '<div class="post-container">';
 
+    titleMeta += exactTime,
     albumContent += '<div class="post-header">' +
         '<h1 class="post-title font-opensans-bold">' + title + '</h1>' +
         '<p class="post-title-meta font-opensans-semibold">' + titleMeta + '</p>' +
