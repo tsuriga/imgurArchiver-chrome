@@ -215,7 +215,7 @@ function generateAlbumContent(images) {
             '</a>' +
         '</div>';
 
-        if (images[i].description.length > 0) {
+        if (images[i].description) {
             albumContent += '<p class="post-image-description font-opensans-reg">' +
                 images[i].description +
             '</p>';
