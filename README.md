@@ -27,6 +27,7 @@ computer. They mimic the appearances and functionality of albums on imgur.
 * v1.2.3 (2015-11-27): fixed to work when browsing over HTTPS
 * v1.2.4 (2016-01-15): fixed to work with albums that have unknown authors
 * v1.2.5 (2016-01-25): improved empty description checks
+* v2.0.0 (2016-02-29): load resources from within the extension to build albums
 
 ## IDEAS ##
 
@@ -36,10 +37,6 @@ version. If you wish to develop this further, feel free to fork and either push
 pull requests or create your own version.
 
 * Enable opening a file saving dialog just by hitting the extension icon
-* Figure out if it's possible to do this without writing all the data in the
-  URL. Now all HTML content gets saved twice since Chrome will enter everything
-  from the address bar into a comment at the top of the saved HTML page: "saved
-  from url=..."
 * Code cleanup. Move styles, scripts and fonts into separate files if possible
 * Animate the zoom effect
 * Maybe use offsetWidth instead of clientWidth so that there's no need to take

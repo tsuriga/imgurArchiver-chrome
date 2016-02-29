@@ -1,4 +1,5 @@
-/*
+/* imgur Archiver license:
+
 The MIT License (MIT)
 
 Copyright (c) 2015 Tsuri Kamppuri
@@ -22,28 +23,47 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+/* Google Open Sans typeface license:
+
+Copyright 2010 Steve Matteson
+Copyright 2011 Google
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 chrome.runtime.onMessage.addListener(function (request, sender) {
     if (request.action === 'openTab') {
-        var archiveContent = "data:text/html;charset=utf-8," +
-            encodeURIComponent(request.source);
+        var newTabId = null;
 
-        chrome.tabs.create({url: archiveContent});
+        chrome.tabs.onUpdated.addListener(function(tabId , info) {
+            if (tabId === newTabId && info.status === 'complete') {
+                chrome.tabs.sendMessage( tabId, {
+                    action: 'fillTemplate',
+                    title: request.title,
+                    body: request.body
+                });
+
+                chrome.tabs.update(tabId, { selected: true });
+            }
+        });
+
+        chrome.tabs.create(
+            { url: 'archive.html', active: false },
+            function (tab) { newTabId = tab.id; }
+        );
     }
 });
 
-window.addEventListener(
-    'load',
-    function (e) {
-        chrome.tabs.executeScript(
-            null, {
-                file: 'archive_generator.js'
-            }, function () {
-                if (chrome.runtime.lastError) {
-                    document.querySelector('#message').innerText = 'There was an error: ' +
-                        chrome.runtime.lastError.message;
-                }
-            }
-        );
-    },
-    false
-);
+window.addEventListener('load', function () {
+    chrome.tabs.executeScript(null, { file: 'archive_aggregator.js'});
+});
