@@ -28,21 +28,28 @@ computer. They mimic the appearances and functionality of albums on imgur.
 * v1.2.4 (2016-01-15): fixed to work with albums that have unknown authors
 * v1.2.5 (2016-01-25): improved empty description checks
 * v2.0.0 (2016-02-29): load resources from within the extension to build albums
+* v2.1.0 (2016-03-07): file format and functionality improvements
+  * save animated gifs as base64 encoded web videos instead
+  * time of the post now links back to original URL for easier re-discovery
+
+This is a huge change as videos are saved as base64 encoded data URLs directly
+in the HTML document in order for Chrome to actually save them locally. The
+encoding itself increases file size by ~37% but the web video files are smaller
+than their gif counterparts by a gigantic margin (we're talking 1-2 % of the
+gif file size) and thus work much smoother.
 
 ## IDEAS ##
 
-These are some of the ideas I might start working on if there's a need for
-them. If I do, I will put them under a TODO header with a planned release
-version. If you wish to develop this further, feel free to fork and either push
-pull requests or create your own version.
+These are some of the ideas I might implement at some point. If you wish to help
+or are experiencing problems with this, feel free to fork and push pull requests
+or create issues in here.
 
 * Enable opening a file saving dialog just by hitting the extension icon
-* Code cleanup. Move styles, scripts and fonts into separate files if possible
 * Animate the zoom effect
-* Maybe use offsetWidth instead of clientWidth so that there's no need to take
-  borders into account manually. Related: many of the magic numbers have been
-  winged and not really calculated to exact pixels
-* Use imgur's actual API
+* Use imgur's actual API becauses the current JSON end-point may close at any
+  point
+* Save web video files locally as separate files to save space and de-clutter
+  the HTML file
 
 ## LICENSES ##
 

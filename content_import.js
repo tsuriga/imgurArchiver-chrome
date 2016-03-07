@@ -57,6 +57,54 @@ function importFavicon(filename) {
     xhr.send();
 }
 
+function buildAlbumBody(bodyHtml) {
+    var body = document.createRange().createContextualFragment(bodyHtml),
+        images = body.querySelectorAll('img'),
+        videos = body.querySelectorAll('video');
+
+    for (var i = 0; i < images.length; i++) {
+        images[i].addEventListener('load', function () { setZooming(this); });
+    }
+
+    for (var i = 0; i < videos.length; i++) {
+        videos[i].addEventListener('loadedmetadata', function () { setZooming(this); });
+    }
+
+    document.body.appendChild(body);
+}
+
+/**
+ * Monitors all changes in header height for ~2 seconds or until 2 resizes
+ * have been committed and applies them to the first image container's
+ * top margin. This fixes a gap between the header and first image during
+ * album creation.
+ */
+function fixHeaderOffsetHeight() {
+    var postContainer = document.body.querySelector('.post-container'),
+        postHeader = postContainer.children[0],
+        firstImageContainer = postContainer.children[1],
+        oldHeight = 0,
+        checksPerformed = 0,
+        resizesPerformed = 0;
+
+    function checkHeaderHeight() {
+        var newHeight = postHeader.offsetHeight;
+
+        if (newHeight !== oldHeight) {
+            firstImageContainer.style.marginTop = newHeight;
+            resizesPerformed++;
+
+            oldHeight = newHeight;
+        }
+
+        if (checksPerformed++ < 80 && resizesPerformed !== 2) {
+            window.setTimeout(checkHeaderHeight, 25);
+        }
+    }
+
+    checkHeaderHeight();
+}
+
 chrome.runtime.onMessage.addListener(function (request, sender) {
     if (request.action === 'fillTemplate') {
         document.querySelector('title').textContent = request.title;
@@ -64,7 +112,8 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
 
         importResource('album.css', function () {
             importResource('album.js', function () {
-                document.body.appendChild(document.createRange().createContextualFragment(request.body));
+                buildAlbumBody(request.body);
+                fixHeaderOffsetHeight();
             });
         });
 

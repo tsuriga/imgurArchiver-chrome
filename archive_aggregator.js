@@ -4,8 +4,8 @@ init();
  * Prechecks conditions and initializes archiving procedure
  */
 function init() {
-    if (window.location.hostname !== 'imgur.com') {
-        return openErrorPage('must be on imgur to archive an album');
+    if (window.location.hostname !== 'imgur.com' || window.location.pathname.indexOf('/gallery') !== 0) {
+        return openErrorPage('must be on an imgur album to archive');
     }
 
     var albumId = window.location.pathname.replace('/gallery/', '');
@@ -50,19 +50,19 @@ function loadAlbum(albumId) {
             var albumData = JSON.parse(this.responseText.replace('\n', '<br/>'));
 
             if (!albumData || !albumData.data) {
-                return openErrorPage('imgur returned unknown JSON');
+                return openErrorPage('imgur returned unknown JSON, please contact the extension author');
             } else if (!albumData.data.images) {
-                return openTab(getTitle(), generateAlbumFromDom());
+                return buildAlbum(getTitle());
             }
 
-            return openTab(getTitle(), generateAlbumFromJson(albumData));
+            return buildAlbum(getTitle(), albumData.data.images);
         } else {
             return openErrorPage('imgur returned status code ' + this.status);
         }
     });
 
     xhr.addEventListener('error', function () {
-        openErrorPage('network error');
+        openErrorPage('Network error');
     });
 
     xhr.open('GET', url);
@@ -70,17 +70,101 @@ function loadAlbum(albumId) {
 }
 
 /**
- * @param string logMessage
+ * @param string message
  */
-function openErrorPage(logMessage) {
-    if (logMessage) {
-        console.error('Archiving failed: ' + logMessage);
-    }
-
+function openErrorPage(message) {
     openTab(
         'Archiving error',
-        'Failed to create the archive. Make sure you are browsing imgur.com/gallery/ when pressing the Archive button'
+        '<span style="color:white">Failed to create the archive: ' + message + '</span>'
     );
+}
+
+/**
+ * Builds album HTML code. Any videos will be prefetched into data URLs
+ *
+ * @param string title
+ */
+function buildAlbum(title, media) {
+    if (!media) {
+        media = getAlbumDetailsFromDom();
+    }
+
+    var videoCount = 0,
+        videoLoadCount = 0,
+        videos = {};
+
+    function processVideoLoad(e) {
+        videos[e.detail.originalSrc].baseSrc = e.detail.baseSrc;
+
+        if (++videoLoadCount === videoCount) {
+            window.dispatchEvent(new CustomEvent('allVideosLoaded'));
+        }
+    }
+
+    function processVideosReady() {
+        // Re-input base64 srcs back into the general media map for final body build
+        for (var videoSrc in videos) {
+            media[videos[videoSrc].index].src = videos[videoSrc].baseSrc
+        }
+
+        openTab(title, generateAlbumBody(media));
+
+        // Remove event listeners so that they don't get re-fired on consecutive runs
+        window.removeEventListener('videoLoaded', processVideoLoad);
+        window.removeEventListener('allVideosLoaded', processVideosReady);
+    }
+
+    window.addEventListener('videoLoaded', processVideoLoad);
+
+    window.addEventListener('allVideosLoaded', processVideosReady);
+
+    for (var i = 0; i < media.length; i++) {
+        media[i].ext = media[i].ext.replace('gif', 'webm');
+
+        var src = 'http://i.imgur.com/' + media[i].hash + media[i].ext;
+
+        if (['.webm', '.mp4'].indexOf(media[i].ext) !== -1) {
+            videoCount++;
+            videos[src] = { index: i, baseSrc: '' };
+        } else {
+            media[i].src = src;
+        }
+    }
+
+    if (videoCount === 0) {
+        return openTab(title, generateAlbumBody(media));
+    }
+
+    // Fetch all videos to data URLs
+    for (var videoSrc in videos) {
+        var xhr = new XMLHttpRequest();
+
+        xhr.responseType = 'blob';
+
+        xhr.addEventListener('load', function () {
+            if (this.status === 200) {
+                var responseUrl = this.responseURL,
+                    reader = new FileReader();
+
+                reader.addEventListener('loadend', function () {
+                    // We pass the video base64 sources inside an event to get around variable scoping
+                    window.dispatchEvent(new CustomEvent('videoLoaded', {
+                        detail: {
+                            originalSrc: responseUrl,
+                            baseSrc: reader.result
+                        }
+                    }));
+                });
+
+                reader.readAsDataURL(this.response);
+            } else {
+                return openErrorPage('a video in the gallery could not be loaded');
+            }
+        });
+
+        xhr.open('GET', videoSrc);
+        xhr.send();
+    }
 }
 
 /**
@@ -88,40 +172,29 @@ function openErrorPage(logMessage) {
  *
  * @return string
  */
-function generateAlbumFromDom() {
-    var dom = document.documentElement,
-        img = dom.querySelector('.post-image img'),
-        video = dom.querySelector('.post-image source')
-        description = dom.querySelector('.post-image-description'),
-        images = [
+function getAlbumDetailsFromDom() {
+    var img = document.querySelector('.post-image img'),
+        video = document.querySelector('.post-image source')
+        description = document.querySelector('.post-image-description'),
+        media = [
             {
-                title: '', // omitted to avoid title popping up twice
+                title: '', // omitted here to prevent the title from popping up twice
                 hash: (img ? img : video).src.split('/').pop().split('.').shift(),
                 description: description ? description.textContent : '',
-                ext: '.' + (img ? img.src.split('.').pop() : 'gif'),
+                ext: '.' + (img ? img.src.split('.').pop() : video.src.split('.').pop()),
             }
         ];
 
-    return generateAlbumBody(images);
-}
-
-/**
- * Parses album image data from JSON. The rest of the album data is still read from DOM
- *
- * @param object albumData
- * @return string
- */
-function generateAlbumFromJson(albumData) {
-    return generateAlbumBody(albumData.data.images);
+    return media;
 }
 
 /**
  * Generates HTML code for the album body contents
  *
- * @param object images
+ * @param object media
  * @return string
  */
-function generateAlbumBody(images) {
+function generateAlbumBody(media) {
     var dom = document.documentElement,
         title = dom.querySelector('.post-title').textContent,
         authorAnchor = dom.querySelector('.post-title-meta a'),
@@ -133,32 +206,35 @@ function generateAlbumBody(images) {
             'by <a href="' + authorAnchor.href + '">' + authorAnchor.textContent + '</a> · ' : '',
         albumContent = '<div class="post-container">';
 
-    titleMeta += exactTime,
+    titleMeta += '<a href="' + window.location.href + '">' + exactTime + '</a>',
     albumContent += '<div class="post-header">' +
         '<h1 class="post-title font-opensans-bold">' + title + '</h1>' +
         '<p class="post-title-meta font-opensans-semibold">' + titleMeta + '</p>' +
     '</div>';
 
-    for (var i = 0; i < images.length; i++) {
+    for (var i = 0; i < media.length; i++) {
         albumContent += '<div class="post-image-container">';
 
-        if (images[i].title.length > 0) {
+        if (media[i].title.length > 0) {
             albumContent += '<h2 class="post-image-title font-opensans-semibold">' +
-                images[i].title +
+                media[i].title +
             '</h2>';
         }
 
-        var imgSrc = 'http://i.imgur.com/' + images[i].hash + images[i].ext;
+        albumContent += '<div class="post-image"><a href="#" class="zoom">';
 
-        albumContent += '<div class="post-image">' +
-            '<a href="' + imgSrc + '" class="zoom">' +
-                '<img src="' + imgSrc + '" style="max-width: 680px;" />' +
-            '</a>' +
-        '</div>';
+        if (['.webm', '.mp4'].indexOf(media[i].ext) === -1) {
+            albumContent += '<img src="' + media[i].src + '" style="max-width: 680px;" />';
+        } else {
+            albumContent += '<video src="' + media[i].src + '" style="max-width: 680px;" ' +
+                'autoplay autostart muted loop controls></video>';
+        }
 
-        if (images[i].description) {
+        albumContent += '</a></div>';
+
+        if (media[i].description) {
             albumContent += '<p class="post-image-description font-opensans-reg">' +
-                images[i].description +
+                media[i].description +
             '</p>';
         }
 
