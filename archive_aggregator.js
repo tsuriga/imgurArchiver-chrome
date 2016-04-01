@@ -5,7 +5,7 @@ init();
  */
 function init() {
     if (window.location.hostname !== 'imgur.com' || window.location.pathname.indexOf('/gallery') !== 0) {
-        return openErrorPage('must be on an imgur album to archive');
+        return openErrorPage('imgur album ID not detected, make sure your current address is imgur.com/gallery/IDHERE');
     }
 
     var albumId = window.location.pathname.replace('/gallery/', '');
@@ -62,7 +62,7 @@ function loadAlbum(albumId) {
     });
 
     xhr.addEventListener('error', function () {
-        openErrorPage('Network error');
+        openErrorPage('network error');
     });
 
     xhr.open('GET', url);
@@ -74,7 +74,7 @@ function loadAlbum(albumId) {
  */
 function openErrorPage(message) {
     openTab(
-        'Archiving error',
+        'archiving error',
         '<span style="color:white">Failed to create the archive: ' + message + '</span>'
     );
 }
@@ -90,33 +90,56 @@ function buildAlbum(title, media) {
     }
 
     var videoCount = 0,
-        videoLoadCount = 0,
+        videoMetaLoadCount = 0,
         videos = {};
 
-    function processVideoLoad(e) {
-        videos[e.detail.originalSrc].baseSrc = e.detail.baseSrc;
+    function processVideoSrcLoad(e) {
+        // Inject base64 encoded data URL src back into the general media map for final body build
+        media[videos[e.detail.originalSrc].index].src = e.detail.baseSrc;
 
-        if (++videoLoadCount === videoCount) {
-            window.dispatchEvent(new CustomEvent('allVideosLoaded'));
+        // Gather video widths to enable CSS zoom animations
+        var video = document.createElement('video');
+
+        video.src = e.detail.baseSrc;
+        video.originalSrc = e.detail.originalSrc;
+        video.addEventListener('loadedmetadata', processVideoMetaReady);
+        video.load();
+    }
+
+    function processVideoMetaReady() {
+        media[videos[this.originalSrc].index].width = this.videoWidth <= 680 ? this.videoWidth : 680;
+
+        // All videos loaded and their widths have been determined
+        if (++videoMetaLoadCount === videoCount) {
+            openTab(title, generateAlbumBody(media));
         }
     }
 
-    function processVideosReady() {
-        // Re-input base64 srcs back into the general media map for final body build
-        for (var videoSrc in videos) {
-            media[videos[videoSrc].index].src = videos[videoSrc].baseSrc
+    function readVideo() {
+        if (this.status === 200) {
+            var responseUrl = this.responseURL,
+                reader = new FileReader();
+
+            reader.addEventListener('loadend', function () {
+                // Loading issues may occur with larger web video albums albeit inconsistently
+                if (!reader.result) {
+                    return openErrorPage('error loading a video in the gallery, please retry');
+                }
+
+                // Pass the video base64 sources inside an event to get around variable scoping
+                window.dispatchEvent(new CustomEvent('videoSrcLoaded', {
+                    detail: {
+                        originalSrc: responseUrl,
+                        baseSrc: reader.result
+                    }
+                }));
+            });
+
+            reader.readAsDataURL(this.response);
+        } else {
+            return openErrorPage('a video in the gallery could not be loaded');
         }
-
-        openTab(title, generateAlbumBody(media));
-
-        // Remove event listeners so that they don't get re-fired on consecutive runs
-        window.removeEventListener('videoLoaded', processVideoLoad);
-        window.removeEventListener('allVideosLoaded', processVideosReady);
     }
-
-    window.addEventListener('videoLoaded', processVideoLoad);
-
-    window.addEventListener('allVideosLoaded', processVideosReady);
 
     for (var i = 0; i < media.length; i++) {
         media[i].ext = media[i].ext.replace('gif', 'webm');
@@ -125,42 +148,28 @@ function buildAlbum(title, media) {
 
         if (['.webm', '.mp4'].indexOf(media[i].ext) !== -1) {
             videoCount++;
-            videos[src] = { index: i, baseSrc: '' };
+            videos[src] = { index: i };
         } else {
             media[i].src = src;
         }
     }
 
     if (videoCount === 0) {
+        // Gather image widths to enable CSS zoom animations
+        media = getImadeWidths(media);
+
         return openTab(title, generateAlbumBody(media));
     }
 
-    // Fetch all videos to data URLs
+    // Fetch all videos as data URLs
+    window.addEventListener('videoSrcLoaded', processVideoSrcLoad);
+
     for (var videoSrc in videos) {
         var xhr = new XMLHttpRequest();
 
         xhr.responseType = 'blob';
 
-        xhr.addEventListener('load', function () {
-            if (this.status === 200) {
-                var responseUrl = this.responseURL,
-                    reader = new FileReader();
-
-                reader.addEventListener('loadend', function () {
-                    // We pass the video base64 sources inside an event to get around variable scoping
-                    window.dispatchEvent(new CustomEvent('videoLoaded', {
-                        detail: {
-                            originalSrc: responseUrl,
-                            baseSrc: reader.result
-                        }
-                    }));
-                });
-
-                reader.readAsDataURL(this.response);
-            } else {
-                return openErrorPage('a video in the gallery could not be loaded');
-            }
-        });
+        xhr.addEventListener('load', readVideo);
 
         xhr.open('GET', videoSrc);
         xhr.send();
@@ -221,16 +230,18 @@ function generateAlbumBody(media) {
             '</h2>';
         }
 
-        albumContent += '<div class="post-image"><a href="#" class="zoom">';
+        albumContent += '<div class="post-image"><div class="zoom">';
 
         if (['.webm', '.mp4'].indexOf(media[i].ext) === -1) {
-            albumContent += '<img src="' + media[i].src + '" style="max-width: 680px;" />';
+            albumContent += '<img class="animatable" src="' + media[i].src + '" width="' + media[i].width + 'px" ' +
+                'style="left: 0; position: relative; border: 0;" />';
         } else {
-            albumContent += '<video src="' + media[i].src + '" style="max-width: 680px;" ' +
+            albumContent += '<video class="animatable" src="' + media[i].src + '" width="' + media[i].width + 'px" ' +
+                'style="left: 0; position: relative; border: 0;" ' +
                 'autoplay autostart muted loop controls></video>';
         }
 
-        albumContent += '</a></div>';
+        albumContent += '</div></div>';
 
         if (media[i].description) {
             albumContent += '<p class="post-image-description font-opensans-reg">' +
@@ -246,6 +257,23 @@ function generateAlbumBody(media) {
     }
 
     return albumContent + '</div>';
+}
+
+/**
+ * Detects and stores widths of image elements
+ *
+ * @param object media
+ * @return object
+ */
+function getImadeWidths(media) {
+    for (var i = 0; i < media.length; i++) {
+        var img = new Image();
+        img.src = media[i].src;
+
+        media[i].width = img.naturalWidth <= 680 ? img.naturalWidth : 680;
+    }
+
+    return media;
 }
 
 /**
