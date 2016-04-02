@@ -50,11 +50,8 @@ or are experiencing problems with this, feel free to fork and push pull requests
 or create issues in here.
 
 * Enable opening a file saving dialog just by hitting the extension icon
-* Animate the zoom effect
-* Use imgur's actual API becauses the current JSON end-point may close at any
-  point
-* Save web video files locally as separate files to save space and de-clutter
-  the HTML file
+* Use imgur's actual API becauses the current JSON end-point may close at any point
+* Save web video files locally as separate files to save space and de-clutter the HTML file
 
 ## LICENSES ##
 
