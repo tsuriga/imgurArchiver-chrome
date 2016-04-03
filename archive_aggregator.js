@@ -109,7 +109,6 @@ function buildAlbum(title, media) {
     function processVideoMetaReady() {
         media[videos[this.originalSrc].index].width = this.videoWidth <= 680 ? this.videoWidth : 680;
 
-        // All videos loaded and their widths have been determined
         if (++videoMetaLoadCount === videoCount) {
             openTab(title, generateAlbumBody(media));
         }
@@ -151,13 +150,11 @@ function buildAlbum(title, media) {
             videos[src] = { index: i };
         } else {
             media[i].src = src;
+            media[i].width = getImadeDisplayWidth(src);
         }
     }
 
     if (videoCount === 0) {
-        // Gather image widths to enable CSS zoom animations
-        media = getImadeWidths(media);
-
         return openTab(title, generateAlbumBody(media));
     }
 
@@ -260,20 +257,16 @@ function generateAlbumBody(media) {
 }
 
 /**
- * Detects and stores widths of image elements
+ * Detects the width of an image element
  *
- * @param object media
- * @return object
+ * @param string src
+ * @return string
  */
-function getImadeWidths(media) {
-    for (var i = 0; i < media.length; i++) {
-        var img = new Image();
-        img.src = media[i].src;
+function getImadeDisplayWidth(src) {
+    var img = new Image();
+    img.src = src;
 
-        media[i].width = img.naturalWidth <= 680 ? img.naturalWidth : 680;
-    }
-
-    return media;
+    return img.naturalWidth <= 680 ? img.naturalWidth : 680;
 }
 
 /**

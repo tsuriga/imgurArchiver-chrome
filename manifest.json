@@ -3,7 +3,7 @@
 
     "name": "imgur Archiver",
     "description": "Enables creating a clean version of an imgur album without comments for archival purposes",
-    "version": "2.2.0",
+    "version": "2.2.1",
 
     "browser_action": {
         "default_icon": "icon_19.png",
@@ -22,7 +22,7 @@
         "activeTab"
     ],
 
-    "content_security_policy": "script-src 'self' 'sha256-750mnarUDVlTfL7COyJzSxUmd0NJF+TsTsw4LqKW930='; object-src 'self'",
+    "content_security_policy": "script-src 'self' 'sha256-q6ZmvRjJqFQ+wEGR4QGQIZN1BqmNzFDEaX7q0pW0AW0='; object-src 'self'",
 
     "short_name": "imgurAr"
 }

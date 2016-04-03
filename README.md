@@ -42,6 +42,7 @@ gif file size) and thus work much smoother.
   * post title's rounded borders fixed to appear not at top but bottom
   * zooming videos works correctly now
   * zooming is now CSS3 animated
+* **v2.2.1 (2016-04-03)**: fix to initial image widths
 
 ## IDEAS ##
 

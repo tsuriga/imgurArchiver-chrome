@@ -2,9 +2,9 @@ var originalWidth = 0;
 
 function setZooming(element) {
     var zoomHandle = element.parentNode,
-        width = element.tagName === 'IMG' ? element.naturalWidth : element.videoWidth;
+        trueWidth = element.tagName === 'IMG' ? element.naturalWidth : element.videoWidth;
 
-    if (width < 710) {
+    if (trueWidth < 710) {
         zoomHandle.parentNode.replaceChild(element, zoomHandle);
 
         if (element.tagName !== 'IMG') {
