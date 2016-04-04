@@ -91,6 +91,10 @@ function buildAlbum(title, media) {
 
     var videoCount = 0,
         videoMetaLoadCount = 0,
+        imageCount = 0,
+        imageMetaLoadCount = 0,
+        mediaMetaLoadCount = 0,
+        mediaTypes = [],
         videos = {};
 
     function processVideoSrcLoad(e) {
@@ -110,8 +114,28 @@ function buildAlbum(title, media) {
         media[videos[this.originalSrc].index].width = this.videoWidth <= 680 ? this.videoWidth : 680;
 
         if (++videoMetaLoadCount === videoCount) {
+            processMediaMetaReady();
+        }
+    }
+
+    function processMediaMetaReady() {
+        if (++mediaMetaLoadCount === mediaTypes.length) {
             openTab(title, generateAlbumBody(media));
         }
+    }
+
+    function loadImageMeta(src, index) {
+        var img = new Image();
+
+        img.addEventListener('load', function () {
+            media[index].width = this.naturalWidth <= 680 ? this.naturalWidth : 680;
+
+            if (++imageMetaLoadCount === imageCount) {
+                processMediaMetaReady();
+            }
+        });
+
+        img.src = src;
     }
 
     function readVideo() {
@@ -147,15 +171,23 @@ function buildAlbum(title, media) {
 
         if (['.webm', '.mp4'].indexOf(media[i].ext) !== -1) {
             videoCount++;
+
+            if (mediaTypes.indexOf('video') === -1) {
+                mediaTypes.push('video');
+            }
+
             videos[src] = { index: i };
         } else {
-            media[i].src = src;
-            media[i].width = getImadeDisplayWidth(src);
-        }
-    }
+            imageCount++;
 
-    if (videoCount === 0) {
-        return openTab(title, generateAlbumBody(media));
+            if (mediaTypes.indexOf('image') === -1) {
+                mediaTypes.push('image');
+            }
+
+            media[i].src = src;
+
+            loadImageMeta(src, i);
+        }
     }
 
     // Fetch all videos as data URLs
@@ -254,19 +286,6 @@ function generateAlbumBody(media) {
     }
 
     return albumContent + '</div>';
-}
-
-/**
- * Detects the width of an image element
- *
- * @param string src
- * @return string
- */
-function getImadeDisplayWidth(src) {
-    var img = new Image();
-    img.src = src;
-
-    return img.naturalWidth <= 680 ? img.naturalWidth : 680;
 }
 
 /**

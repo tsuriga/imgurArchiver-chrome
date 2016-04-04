@@ -43,6 +43,7 @@ gif file size) and thus work much smoother.
   * zooming videos works correctly now
   * zooming is now CSS3 animated
 * **v2.2.1 (2016-04-03)**: fix to initial image widths
+* **v2.2.2 (2016-04-04)**: fix to image width detections
 
 ## IDEAS ##
 
