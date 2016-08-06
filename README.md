@@ -45,6 +45,9 @@ gif file size) and thus work much smoother.
 * **v2.2.1 (2016-04-03)**: fix to initial image widths
 * **v2.2.2 (2016-04-04)**: fix to image width detections
 * **v2.2.3 (2016-04-16)**: fix to header position so that it stays on top
+* **v2.2.4 (2016-08-06)**: layout and selector fixes
+  * add centering for small images
+  * fix selector for posting time since imgur changed it on their end
 
 ## IDEAS ##
 
