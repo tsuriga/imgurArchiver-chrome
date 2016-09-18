@@ -1,3 +1,6 @@
+/**
+ * Imports an external resource to the document
+ */
 function importResource(filename, callback) {
     var src = chrome.extension.getURL(filename),
         ext = src.split('.').pop(),
@@ -31,6 +34,9 @@ function importResource(filename, callback) {
     xhr.send();
 }
 
+/**
+ * Imports favicon as data URL
+ */
 function importFavicon(filename) {
     var src = chrome.extension.getURL(filename),
         xhr = new XMLHttpRequest();
@@ -57,6 +63,9 @@ function importFavicon(filename) {
     xhr.send();
 }
 
+/**
+ * Builds the markup for the album contents with event listeners for zooming
+ */
 function buildAlbumBody(bodyHtml) {
     var body = document.createRange().createContextualFragment(bodyHtml),
         images = body.querySelectorAll('img'),

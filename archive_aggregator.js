@@ -1,6 +1,23 @@
 init();
 
 /**
+ * Turns simple links in the text into hyperlinks. Adapted code from
+ * http://stackoverflow.com/a/3890175 by Travis, cloud8421, and Sam Hasler
+ *
+ * @param string inputText
+ */
+function linkify(inputText) {
+    // URLs starting with http:// or https://
+    var replacePattern1 = /(\b(https?):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+
+    // URLs starting with "www." (without // before it, or it'd re-link the ones done above)
+    var replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+
+    return (inputText.replace(replacePattern1, '<a href="$1">$1</a>'))
+        .replace(replacePattern2, '$1<a href="http://$2">$2</a>');
+}
+
+/**
  * Prechecks conditions and initializes archiving procedure
  */
 function init() {
@@ -70,6 +87,8 @@ function loadAlbum(albumId) {
 }
 
 /**
+ * Opens a tab with an error message
+ *
  * @param string message
  */
 function openErrorPage(message) {
@@ -82,11 +101,12 @@ function openErrorPage(message) {
 /**
  * Builds album HTML code. Any videos will be prefetched into data URLs
  *
- * @param string title
+ * @param string title Album title
+ * @param array media
  */
 function buildAlbum(title, media) {
     if (!media) {
-        media = getAlbumDetailsFromDom();
+        media = getOneImageAlbumDetailsFromDom();
     }
 
     var videoCount = 0,
@@ -97,11 +117,12 @@ function buildAlbum(title, media) {
         mediaTypes = [],
         videos = {};
 
+    // Begins to load a video
     function processVideoSrcLoad(e) {
         // Inject base64 encoded data URL src back into the general media map for final body build
         media[videos[e.detail.originalSrc].index].src = e.detail.baseSrc;
 
-        // Gather video widths to enable CSS zoom animations
+        // Gather video width to enable CSS zoom animation
         var video = document.createElement('video');
 
         video.src = e.detail.baseSrc;
@@ -110,6 +131,7 @@ function buildAlbum(title, media) {
         video.load();
     }
 
+    // Saves a video's meta information, namely width for zooming purposes
     function processVideoMetaReady() {
         media[videos[this.originalSrc].index].width = this.videoWidth <= 680 ? this.videoWidth : 680;
 
@@ -118,12 +140,14 @@ function buildAlbum(title, media) {
         }
     }
 
+    // Keeps checking whether all meta information has been loaded
     function processMediaMetaReady() {
         if (++mediaMetaLoadCount === mediaTypes.length) {
             openTab(title, generateAlbumBody(media));
         }
     }
 
+    // Saves an image's meta information, namely width for zooming purposes
     function loadImageMeta(src, index) {
         var img = new Image();
 
@@ -144,7 +168,7 @@ function buildAlbum(title, media) {
                 reader = new FileReader();
 
             reader.addEventListener('loadend', function () {
-                // Loading issues may occur with larger web video albums albeit inconsistently
+                // Loading issues may occur with larger web video albums, albeit inconsistently
                 if (!reader.result) {
                     return openErrorPage('error loading a video in the gallery, please retry');
                 }
@@ -164,8 +188,9 @@ function buildAlbum(title, media) {
         }
     }
 
+    // Transform relative media sources into absolute URLs and load images' meta information
     for (var i = 0; i < media.length; i++) {
-        media[i].ext = media[i].ext.replace('gif', 'webm');
+        media[i].ext = media[i].ext.replace('gif', 'mp4');
 
         var src = 'http://i.imgur.com/' + media[i].hash + media[i].ext;
 
@@ -192,12 +217,10 @@ function buildAlbum(title, media) {
 
     // Fetch all videos as data URLs
     window.addEventListener('videoSrcLoaded', processVideoSrcLoad);
-
     for (var videoSrc in videos) {
         var xhr = new XMLHttpRequest();
 
         xhr.responseType = 'blob';
-
         xhr.addEventListener('load', readVideo);
 
         xhr.open('GET', videoSrc);
@@ -206,11 +229,11 @@ function buildAlbum(title, media) {
 }
 
 /**
- * Parses album from current DOM. Only used for albums with one image.
+ * Parses one-image album from current DOM.
  *
- * @return string
+ * @return array
  */
-function getAlbumDetailsFromDom() {
+function getOneImageAlbumDetailsFromDom() {
     var img = document.querySelector('.post-image img'),
         video = document.querySelector('.post-image source')
         description = document.querySelector('.post-image-description'),
@@ -229,7 +252,7 @@ function getAlbumDetailsFromDom() {
 /**
  * Generates HTML code for the album body contents
  *
- * @param object media
+ * @param array Media objects
  * @return string
  */
 function generateAlbumBody(media) {
@@ -274,7 +297,7 @@ function generateAlbumBody(media) {
 
         if (media[i].description) {
             albumContent += '<p class="post-image-description font-opensans-reg">' +
-                media[i].description +
+                linkify(media[i].description) +
             '</p>';
         }
 
