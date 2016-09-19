@@ -61,7 +61,7 @@ or are experiencing problems with this, feel free to fork and push pull requests
 or create issues in here.
 
 * Enable opening a file saving dialog just by hitting the extension icon
-* Use imgur's actual API becauses the current JSON end-point may close at any point
+* Use imgur's actual API because the current JSON end-point may close at any point
 * Save web video files locally as separate files to save space and de-clutter the HTML file
 
 ## LICENSES ##
