@@ -3,7 +3,7 @@
 
     "name": "imgur Archiver",
     "description": "Enables creating a clean version of an imgur album without comments for archival purposes",
-    "version": "2.3.0",
+    "version": "2.3.1",
 
     "browser_action": {
         "default_icon": "icon_19.png",

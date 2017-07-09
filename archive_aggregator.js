@@ -262,7 +262,8 @@ function generateAlbumBody(media) {
         authorAnchor = dom.querySelector('.post-title-meta a'),
         postDescriptionDiv = dom.querySelector('.post-description'),
         postDescription = postDescriptionDiv ? postDescriptionDiv.textContent : '',
-        exactTime = dom.querySelector('.post-title-meta span:last-child').title,
+        titleMetaSpans = dom.querySelectorAll('.post-title-meta span'),
+        exactTime = titleMetaSpans[titleMetaSpans.length - 1].title,
 
         titleMeta = authorAnchor ?
             'by <a href="' + authorAnchor.href + '">' + authorAnchor.textContent + '</a> · ' : '',

@@ -48,11 +48,12 @@ gif file size) and thus work much smoother.
 * **v2.2.4 (2016-08-06)**: layout and selector fixes
   * add centering for small images
   * fix selector for posting time since imgur changed it on their end
-* **v2.3.0 (2017-07-09)**:
+* **v2.3.0 (2017-07-09)**: layout and video fixes
   * gifs are now assumed to have an mp4 equivalent instead of a webm one,
     hopefully this'll reduce cases where the video file cannot be loaded
   * some URLs within descriptions are now turned into actual links
   * update to match current imgur appearances better (on purpose not fully)
+* **v2.3.1 (2017-07-10)**: fix to time fetching
 
 ## IDEAS ##
 
