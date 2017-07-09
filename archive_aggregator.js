@@ -4,7 +4,7 @@ init();
  * Turns simple links in the text into hyperlinks. Adapted code from
  * http://stackoverflow.com/a/3890175 by Travis, cloud8421, and Sam Hasler
  *
- * @param string inputText
+ * @param {string} inputText
  */
 function linkify(inputText) {
     // URLs starting with http:// or https://
@@ -13,7 +13,8 @@ function linkify(inputText) {
     // URLs starting with "www." (without // before it, or it'd re-link the ones done above)
     var replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
 
-    return (inputText.replace(replacePattern1, '<a href="$1">$1</a>'))
+    return inputText
+        .replace(replacePattern1, '<a href="$1">$1</a>')
         .replace(replacePattern2, '$1<a href="http://$2">$2</a>');
 }
 
@@ -37,8 +38,8 @@ function init() {
 /**
  * Sends a message to the background script to open a new tab
  *
- * @param string title
- * @param string body
+ * @param {string} title
+ * @param {string} body
  */
 function openTab(title, body) {
     chrome.runtime.sendMessage({
@@ -52,7 +53,7 @@ function openTab(title, body) {
  * Loads album data from imgur, generates HTML code for
  * the album and sends the generated page to a new tab
  *
- * @param string albumId
+ * @param {string} albumId
  */
 function loadAlbum(albumId) {
     var url = window.location.protocol + '//imgur.com/ajaxalbums/getimages/' + albumId + '/hit.json?all=true',
@@ -89,7 +90,7 @@ function loadAlbum(albumId) {
 /**
  * Opens a tab with an error message
  *
- * @param string message
+ * @param {string} message
  */
 function openErrorPage(message) {
     openTab(
@@ -101,8 +102,8 @@ function openErrorPage(message) {
 /**
  * Builds album HTML code. Any videos will be prefetched into data URLs
  *
- * @param string title Album title
- * @param array media
+ * @param {string} title - Album title
+ * @param {array} media
  */
 function buildAlbum(title, media) {
     if (!media) {
@@ -168,7 +169,7 @@ function buildAlbum(title, media) {
                 reader = new FileReader();
 
             reader.addEventListener('loadend', function () {
-                // Loading issues may occur with larger web video albums, albeit inconsistently
+                // Loading issues may occur with larger web video albums, it's slightly inconsistent
                 if (!reader.result) {
                     return openErrorPage('error loading a video in the gallery, please retry');
                 }
@@ -229,9 +230,9 @@ function buildAlbum(title, media) {
 }
 
 /**
- * Parses one-image album from current DOM.
+ * Parses one-image album from current DOM
  *
- * @return array
+ * @return {array}
  */
 function getOneImageAlbumDetailsFromDom() {
     var img = document.querySelector('.post-image img'),
@@ -252,8 +253,8 @@ function getOneImageAlbumDetailsFromDom() {
 /**
  * Generates HTML code for the album body contents
  *
- * @param array Media objects
- * @return string
+ * @param {array} media - Media objects
+ * @return {string}
  */
 function generateAlbumBody(media) {
     var dom = document.documentElement,
@@ -276,12 +277,6 @@ function generateAlbumBody(media) {
     for (var i = 0; i < media.length; i++) {
         albumContent += '<div class="post-image-container">';
 
-        if (media[i].title.length > 0) {
-            albumContent += '<h2 class="post-image-title font-opensans-semibold">' +
-                media[i].title +
-            '</h2>';
-        }
-
         albumContent += '<div class="post-image"><div class="zoom">';
 
         if (['.webm', '.mp4'].indexOf(media[i].ext) === -1) {
@@ -293,7 +288,13 @@ function generateAlbumBody(media) {
                 'autoplay autostart muted loop controls></video>';
         }
 
-        albumContent += '</div></div>';
+        albumContent += '</div></div>'; // close .post-image .zoom
+
+        albumContent += '<div class="post-image-meta">';
+
+        if (media[i].title.length > 0) {
+            albumContent += '<h2 class="post-image-title font-opensans-semibold">' + media[i].title + '</h2>';
+        }
 
         if (media[i].description) {
             albumContent += '<p class="post-image-description font-opensans-reg">' +
@@ -301,7 +302,8 @@ function generateAlbumBody(media) {
             '</p>';
         }
 
-        albumContent += '</div>';
+        albumContent += '</div>'; // end .post-image-meta
+        albumContent += '</div>'; // end .post-image-container
     }
 
     if (postDescription.length > 0) {
@@ -312,7 +314,7 @@ function generateAlbumBody(media) {
 }
 
 /**
- * @return string
+ * @return {string}
  */
 function getTitle() {
     return document.documentElement.querySelector('.post-title').textContent;

@@ -48,11 +48,11 @@ gif file size) and thus work much smoother.
 * **v2.2.4 (2016-08-06)**: layout and selector fixes
   * add centering for small images
   * fix selector for posting time since imgur changed it on their end
-* **v2.3.0 (2016-09-18)**:
+* **v2.3.0 (2017-07-09)**:
   * gifs are now assumed to have an mp4 equivalent instead of a webm one,
     hopefully this'll reduce cases where the video file cannot be loaded
-  * some URLs within comments are now turned into actual links
-  * fix and add comments in the code
+  * some URLs within descriptions are now turned into actual links
+  * update to match current imgur appearances better (on purpose not fully)
 
 ## IDEAS ##
 
@@ -62,7 +62,6 @@ or create issues in here.
 
 * Enable opening a file saving dialog just by hitting the extension icon
 * Use imgur's actual API because the current JSON end-point may close at any point
-* Save web video files locally as separate files to save space and de-clutter the HTML file
 
 ## LICENSES ##
 

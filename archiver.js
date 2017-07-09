@@ -47,7 +47,7 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
 
         chrome.tabs.onUpdated.addListener(function(tabId , info) {
             if (tabId === newTabId && info.status === 'complete') {
-                chrome.tabs.sendMessage( tabId, {
+                chrome.tabs.sendMessage(tabId, {
                     action: 'fillTemplate',
                     title: request.title,
                     body: request.body

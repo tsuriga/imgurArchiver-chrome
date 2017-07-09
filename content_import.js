@@ -106,7 +106,7 @@ function fixHeaderOffsetHeight() {
             oldHeight = newHeight;
         }
 
-        if (checksPerformed++ < 80 && resizesPerformed !== 2) {
+        if (++checksPerformed < 80 && resizesPerformed !== 2) {
             window.setTimeout(checkHeaderHeight, 25);
         }
     }
